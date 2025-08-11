@@ -44,6 +44,18 @@
   <div id="resultModal" class="result-modal">
     <div class="result-content" id="resultContent"></div>
   </div>
+
+  <!--
+    Unterer Bereich zur Eingabe des API‑Schlüssels. Dieser Bereich ist immer
+    sichtbar und erlaubt das Speichern eines neuen Schlüssels. Sobald ein
+    Schlüssel vorhanden ist, wird er als Passwortfeld vorausgefüllt. Durch
+    Drücken der Enter‑Taste oder den Speichern‑Button wird der Schlüssel im
+    lokalen Speicher abgelegt.
+  -->
+  <div id="apiKeyBar">
+    <input type="password" id="apiKeyBarInput" placeholder="OpenAI API‑Schlüssel eingeben …" />
+    <button id="saveApiKeyBar">Speichern</button>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
