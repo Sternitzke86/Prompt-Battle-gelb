@@ -23,12 +23,13 @@ body {
 
 /* Container für Logo und Eingabefeld. Nutzt die gesamte Höhe des Bildschirms
    und ordnet die Elemente vertikal an. */
+/*
+  Der Hauptcontainer ordnet Logo, Nachrichtenbereich und Eingabefeld
+  vertikal an. Die Höhe wird durch die Höhe des API‑Key‑Bars reduziert,
+  sodass dieser nicht den Inhalt überlagert. */
 .main-container {
   display: flex;
   flex-direction: column;
-  /* Reduziere die Höhe um die Höhe des API‑Key‑Bars. Der Bar ist fest am
-     unteren Rand positioniert und benötigt Platz, damit das Eingabefeld
-     nicht verdeckt wird. 5rem sind ausreichend für Eingabefeld und Button. */
   height: calc(100vh - 5rem);
   width: 100%;
   box-sizing: border-box;
@@ -216,14 +217,15 @@ footer {
 */
 .full-input {
   width: 100%;
-  /* Füllt den verbleibenden Platz unter dem Logo aus */
-  flex: 1;
+  /* Eingabefeld steht am unteren Rand der Nachrichtenliste und hat eine
+     feste Höhe. Die Schrift ist sehr groß, damit der Text gut lesbar ist. */
+  flex: none;
+  min-height: 6rem;
   padding: 0.5rem;
   box-sizing: border-box;
   border: none;
   outline: none;
   resize: none;
-  /* Schriftgröße nochmals um ein Drittel reduziert (von 8rem auf ca. 5.3rem) */
   font-size: 5.3rem;
   line-height: 1.2;
   background: var(--bg-color);
@@ -262,6 +264,39 @@ footer {
   max-width: 95%;
   max-height: 95%;
   border-radius: 12px;
+}
+
+/* Nachrichtenliste: Dieser Bereich sammelt alle abgeschickten Prompts und
+   die dazugehörigen generierten Bilder. Er wächst dynamisch und ist
+   scrollbar, falls der Inhalt den verfügbaren Platz übersteigt. */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  font-size: 4rem;
+  line-height: 1.3;
+  color: var(--text-color);
+}
+
+/* Einzelne Nachricht: Ein Abstand nach unten trennt die Nachrichten. */
+.message {
+  margin-bottom: 1rem;
+}
+
+/* Prompt‑Text innerhalb einer Nachricht. */
+.message .prompt-text {
+  margin: 0 0 0.5rem 0;
+  white-space: pre-wrap;
+}
+
+/* Bilder innerhalb der Nachrichten: nehmen die verfügbare Breite ein und
+   besitzen abgerundete Ecken. Durch Klick lassen sie sich vergrößern. */
+.message img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  cursor: pointer;
 }
 
 /*

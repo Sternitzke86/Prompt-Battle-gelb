@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const promptInput = document.getElementById('prompt');
   const resultModal = document.getElementById('resultModal');
   const resultContent = document.getElementById('resultContent');
+  const messagesContainer = document.getElementById('messages');
 
   // Zeigt eine Warnung an, wenn die Seite über file:// geöffnet wurde. In diesem
   // Fall müssen wir auf einen lokalen Webserver wechseln. Die Warnung wird im
@@ -76,12 +77,23 @@ document.addEventListener('DOMContentLoaded', () => {
   async function sendPrompt() {
     const prompt = promptInput.value.trim();
     if (!prompt) return;
-    // Leere das Eingabefeld nach dem Absenden
-    promptInput.value = '';
     if (!apiKey) {
       showResult('Kein API‑Schlüssel gefunden. Bitte gib deinen Schlüssel unten ein.');
       return;
     }
+    // Leg den aktuellen Prompt in einer neuen Nachricht ab
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message';
+    const promptPara = document.createElement('p');
+    promptPara.className = 'prompt-text';
+    promptPara.textContent = prompt;
+    messageDiv.appendChild(promptPara);
+    // Füge die leere Nachricht dem Container hinzu, damit der Platz reserviert ist
+    messagesContainer.appendChild(messageDiv);
+    // Scrolle ans Ende, damit die neue Nachricht sichtbar ist
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Leere das Eingabefeld nach dem Absenden
+    promptInput.value = '';
     // Warnung bei file://
     if (warnIfFileProtocol()) return;
     const payload = {
@@ -110,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             errorMsg = `${errorMsg}: ${errorData.error.message}`;
           }
         } catch (e) {
-          /* JSON parse errors werden ignoriert */
+          /* ignore JSON parse errors */
         }
         throw new Error(errorMsg);
       }
@@ -120,18 +132,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = prompt;
-        showResult(img);
+        // Durch Klick auf das Bild wird eine vergrößerte Ansicht im Modal angezeigt
+        img.addEventListener('click', () => {
+          showResult(img.cloneNode(true));
+        });
+        messageDiv.appendChild(img);
       } else {
-        showResult('Es wurde kein Bild zurückgegeben.');
+        const errorP = document.createElement('p');
+        errorP.textContent = 'Es wurde kein Bild zurückgegeben.';
+        messageDiv.appendChild(errorP);
       }
     } catch (error) {
       console.error(error);
+      const errorP = document.createElement('p');
       if (error.message && error.message.toLowerCase().includes('failed to fetch')) {
-        showResult('Fehler: Die Anfrage konnte nicht gesendet werden. Dies kann an der CORS‑Policy liegen. Starte die Seite über einen lokalen Webserver oder überprüfe deine Internetverbindung.');
+        errorP.textContent = 'Fehler: Die Anfrage konnte nicht gesendet werden. Dies kann an der CORS‑Policy liegen. Starte die Seite über einen lokalen Webserver oder überprüfe deine Internetverbindung.';
       } else {
-        showResult(`Fehler bei der Kommunikation mit der API: ${error.message}`);
+        errorP.textContent = `Fehler bei der Kommunikation mit der API: ${error.message}`;
       }
+      messageDiv.appendChild(errorP);
     }
+    // Stelle sicher, dass die neu eingefügte Nachricht sichtbar ist
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
   // Beim Drücken von Enter wird der Prompt abgeschickt. Mit Shift+Enter kann
@@ -169,7 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const bar = document.getElementById('apiKeyBar');
   const barInput = document.getElementById('apiKeyBarInput');
   const barSaveBtn = document.getElementById('saveApiKeyBar');
-  // Bei bestehendem Schlüssel im Speicher fülle das Passwortfeld vor
+  // Bei bestehendem Schlüssel im Speicher fülle das Passwortfeld vor. Der
+  // Eingabebereich bleibt weiterhin sichtbar, damit der Schlüssel jederzeit
+  // überprüft oder geändert werden kann. Zum Ändern kann man auch Ctrl+K
+  // nutzen, um den Modaldialog zu öffnen.
   if (apiKey && barInput) {
     barInput.value = apiKey;
   }
@@ -181,6 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Synchronisiere auch das Modal‑Feld
       const modalInput = document.getElementById('apiKeyInput');
       if (modalInput) modalInput.value = key;
+      // Der Bar bleibt sichtbar, damit der Schlüssel später erneut geändert
+      // werden kann. Über Ctrl+K kann zusätzlich der Modaldialog geöffnet
+      // werden.
     }
   }
   if (barSaveBtn) {
