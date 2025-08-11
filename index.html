@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt‑Battle – Gelb</title>
+  <!--
+    Single‑User‑Version der Prompt‑Battle‑Oberfläche.
+    Diese Variante ist für Präsentationen gedacht: Großformatiger Text auf einem
+    knalligen Hintergrund sorgt dafür, dass auch Zuschauerinnen und Zuschauer
+    aus einiger Entfernung mitlesen können. Ein API‑Schlüssel wird lokal im
+    Browser gespeichert. Für den Schriftgrad orientieren wir uns an
+    Webstandards: Ohne Angabe beträgt die Standardschriftgröße 16 px【742899299561717†L765-L790】.
+    Hier erhöhen wir sie deutlich. Die Farbwerte sind in der verlinkten
+    CSS‑Datei hinterlegt.
+  -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="apiKeyModal" class="modal">
+    <div class="modal-content">
+      <h2>OpenAI API‑Schlüssel</h2>
+      <p>
+        Bitte gib deinen persönlichen OpenAI API‑Schlüssel ein. Der Schlüssel wird
+        ausschließlich im lokalen Speicher deines Browsers gespeichert, damit du
+        ihn nicht jedes Mal erneut eingeben musst. Ohne gültigen Schlüssel können
+        keine Antworten generiert werden.
+      </p>
+      <input type="password" id="apiKeyInput" placeholder="sk‑..." />
+      <button id="saveApiKey">Speichern</button>
+    </div>
+  </div>
+  <!--
+    Hauptbereich: Das Logo des Digitalen Innovationszentrums wird oben links
+    angezeigt. Direkt darunter beginnt das große Eingabefeld für den Prompt.
+    Der gesamte Container nimmt die volle Höhe des Viewports ein, damit das
+    Textfeld den verfügbaren Platz nach dem Logo ausfüllt.
+  -->
+  <div class="main-container">
+    <img id="logo" src="logo.png" alt="Logo des Digitalen Innovationszentrums" />
+    <textarea id="prompt" class="full-input" autocomplete="off" autofocus></textarea>
+  </div>
+  <!-- Ergebnis‑Overlay für Bilder oder Fehlermeldungen -->
+  <div id="resultModal" class="result-modal">
+    <div class="result-content" id="resultContent"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

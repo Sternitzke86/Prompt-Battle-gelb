@@ -1,0 +1,262 @@
+/*
+  Großformatiges, kontrastreiches Design in leuchtendem Gelb. Das Layout
+  orientiert sich an dem vom Nutzer bereitgestellten Foto: ein farbiges
+  Display mit schwarzem Rand und sehr großer Schrift. Für das Layout
+  verwenden wir CSS‑Variablen, sodass die Farbe leicht geändert werden kann.
+*/
+
+:root {
+  --bg-color: #ffff3b; /* helles, knalliges Gelb */
+  --text-color: #000; /* Schwarz für optimale Lesbarkeit */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  /* Der gesamte Hintergrund verwendet die definierte Hintergrundfarbe und füllt
+     den kompletten Bildschirm aus. */
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Container für Logo und Eingabefeld. Nutzt die gesamte Höhe des Bildschirms
+   und ordnet die Elemente vertikal an. */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
+/* Logo oben links. Die Größe ist relativ, damit es auf unterschiedlichen
+   Bildschirmgrößen ansehnlich bleibt. */
+#logo {
+  max-width: 30%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin-bottom: 1rem;
+  color: #fff;
+  font-size: 3rem;
+  text-align: center;
+}
+
+/* Untertitel für die zweite Zeile der Überschrift */
+/* Die Unterüberschrift „Kann KI Kunst?“ ist doppelt so groß wie der Titel
+   und wird weiß dargestellt. */
+.subtitle {
+  font-size: 6rem;
+  line-height: 1;
+  color: #fff;
+}
+
+/* Der farbige Bereich füllt jetzt die gesamte Breite des Fensters aus. */
+.chat-wrapper {
+  width: 100%;
+  max-width: none;
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+  border: 12px solid #000;
+  border-radius: 0;
+  background-color: var(--bg-color);
+  box-shadow: none;
+}
+
+.chat-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  font-size: 2.5rem;
+  line-height: 1.35;
+  color: var(--text-color);
+}
+
+.chat-container .message {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+.chat-container .user {
+  background: rgba(255, 255, 255, 0.4);
+  text-align: left;
+}
+
+.chat-container .ai {
+  background: rgba(0, 0, 0, 0.15);
+  text-align: right;
+}
+
+/* Bilder in AI‑Antworten sollen groß dargestellt werden */
+.chat-container .ai img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.input-area {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  background: #111;
+}
+
+.input-area input {
+  flex: 1;
+  /* Gleiche Schriftgröße wie der Untertitel „Kann KI Kunst?“ */
+  font-size: 6rem;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  margin-right: 0.5rem;
+}
+
+.input-area input:focus {
+  outline: none;
+}
+
+.input-area button {
+  /* Gleiche Größe wie das Eingabefeld */
+  font-size: 6rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  background: #000;
+  color: var(--bg-color);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.input-area button:hover {
+  opacity: 0.8;
+}
+
+footer {
+  margin-top: 1rem;
+  color: #888;
+  font-size: 1rem;
+}
+
+/* Button zum Ändern des API‑Schlüssels */
+.api-key-btn {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  background: #000;
+  color: var(--bg-color);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.api-key-btn:hover {
+  opacity: 0.8;
+}
+
+/* Modal Styling (reuse from previous design) */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 8px;
+  color: #000;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.modal-content button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #111;
+  color: var(--bg-color);
+  cursor: pointer;
+}
+
+/*
+  Vollbild‑Eingabefeld: Das Textfeld füllt die gesamte Seite aus und wirkt
+  nicht wie ein klassisches Eingabefeld. Es hat keine Rahmen, keine
+  Schatten und nutzt dieselbe Hintergrundfarbe wie der restliche Bildschirm.
+  Der Text ist extrem groß, damit Zuschauerinnen und Zuschauer auch aus
+  größerer Entfernung mitlesen können.
+*/
+.full-input {
+  width: 100%;
+  /* Füllt den verbleibenden Platz unter dem Logo aus */
+  flex: 1;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+  resize: none;
+  /* Schriftgröße nochmals um ein Drittel reduziert (von 8rem auf ca. 5.3rem) */
+  font-size: 5.3rem;
+  line-height: 1.2;
+  background: var(--bg-color);
+  color: var(--text-color);
+  caret-color: var(--text-color);
+  font-family: inherit;
+}
+
+/* Modal für Ergebnisanzeige. Wird nur angezeigt, wenn ein Bild oder eine
+   Fehlermeldung vorliegt. */
+.result-modal {
+  display: none;
+  position: fixed;
+  z-index: 1100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.result-modal .result-content {
+  max-width: 95%;
+  max-height: 95%;
+  overflow: auto;
+  /* Zentriert den Inhalt (Bild oder Text) innerhalb des Overlays */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 4rem;
+}
+.result-modal img {
+  max-width: 95%;
+  max-height: 95%;
+  border-radius: 12px;
+}
