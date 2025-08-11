@@ -38,13 +38,13 @@
   -->
   <div class="main-container">
     <img id="logo" src="logo.png" alt="Logo des Digitalen Innovationszentrums" />
+    <!-- Eingabefeld für den neuen Prompt. Es steht direkt unter dem Logo,
+         sodass es sofort ins Auge fällt. Durch Drücken der Enter‑Taste wird
+         der Inhalt an die API gesendet. -->
+    <textarea id="prompt" class="full-input" autocomplete="off" autofocus></textarea>
     <!-- Nachrichtenbereich: Hier werden die abgeschickten Prompts sowie die
          generierten Bilder in chronologischer Reihenfolge angezeigt. -->
     <div id="messages" class="messages"></div>
-    <!-- Eingabefeld für den neuen Prompt. Das Feld bleibt am unteren Rand der
-         Hauptansicht. Durch Drücken der Enter‑Taste wird der Inhalt an die
-         API gesendet. -->
-    <textarea id="prompt" class="full-input" autocomplete="off" autofocus></textarea>
   </div>
   <!-- Ergebnis‑Overlay für Bilder oder Fehlermeldungen -->
   <div id="resultModal" class="result-modal">
