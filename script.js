@@ -134,10 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = prompt;
+        img.classList.add('generated-image');
         img.addEventListener('click', () => {
           showResult(img.cloneNode(true));
         });
         messageDiv.appendChild(img);
+        // automatisch groß anzeigen
+        showResult(img.cloneNode(true));
       } else {
         const errorP = document.createElement('p');
         errorP.textContent = 'Es wurde kein Bild zurückgegeben.';
