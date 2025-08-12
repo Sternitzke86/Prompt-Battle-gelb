@@ -346,3 +346,10 @@ footer {
 #apiKeyBar button:hover {
   opacity: 0.8;
 }
+
+.scroll-container {
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
