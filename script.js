@@ -192,14 +192,6 @@ Transform this user prompt into an optimized DALL-E 3 prompt:`;
     promptPara.className = 'prompt-text';
     promptPara.textContent = originalPrompt;
     messageDiv.appendChild(promptPara);
-    
-    // Loading-Indikator hinzufügen
-    const loadingDiv = document.createElement('div');
-    loadingDiv.textContent = '🔄 Optimiere Prompt mit GPT-4...';
-    loadingDiv.style.fontStyle = 'italic';
-    loadingDiv.style.color = '#666';
-    messageDiv.appendChild(loadingDiv);
-    
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     promptInput.value = '';
@@ -208,16 +200,10 @@ Transform this user prompt into an optimized DALL-E 3 prompt:`;
     if (warnIfFileProtocol()) return;
 
     try {
-      // STUFE 1: GPT-4 optimiert den Prompt (wie ChatGPT)
-      loadingDiv.textContent = '🔄 GPT-4 optimiert Prompt...';
-      const optimizedPrompt = await optimizePromptWithGPT4(originalPrompt);
+      // STUFE 1: GPT-4 optimiert den Prompt (wie ChatGPT)const optimizedPrompt = await optimizePromptWithGPT4(originalPrompt);
       
-      // STUFE 2: DALL-E 3 generiert das Bild
-      loadingDiv.textContent = '🎨 DALL-E 3 generiert Bild...';
-      const imageData = await generateImageWithOptimizedPrompt(optimizedPrompt, originalPrompt);
+      // STUFE 2: DALL-E 3 generiert das Bildconst imageData = await generateImageWithOptimizedPrompt(optimizedPrompt, originalPrompt);
       
-      // Loading-Indikator entfernen
-      messageDiv.removeChild(loadingDiv);
       
       const imageUrl = imageData.data && imageData.data[0] && imageData.data[0].url;
       
@@ -230,14 +216,6 @@ Transform this user prompt into an optimized DALL-E 3 prompt:`;
           showResult(img.cloneNode(true));
         });
         messageDiv.appendChild(img);
-        
-        // Zeige auch den optimierten Prompt (optional)
-        const optimizedDiv = document.createElement('div');
-        optimizedDiv.innerHTML = `<small><strong>Optimierter Prompt:</strong> ${optimizedPrompt}</small>`;
-        optimizedDiv.style.fontSize = '0.8em';
-        optimizedDiv.style.color = '#666';
-        optimizedDiv.style.marginTop = '0.5rem';
-        messageDiv.appendChild(optimizedDiv);
         
         // automatisch groß anzeigen
         showResult(img.cloneNode(true));
