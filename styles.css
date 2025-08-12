@@ -223,7 +223,7 @@ footer {
   /* Eingabefeld steht am unteren Rand der Nachrichtenliste und hat eine
      feste Höhe. Die Schrift ist sehr groß, damit der Text gut lesbar ist. */
   flex: none;
-  min-height: 6rem;
+  min-height: 12rem;
   padding: 0.5rem;
   box-sizing: border-box;
   border: none;

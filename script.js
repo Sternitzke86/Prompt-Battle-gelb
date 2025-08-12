@@ -8,6 +8,11 @@
   wobei das Overlay die Hintergrundfarbe der jeweiligen Farbvariante nutzt.
 */
 
+function enhancePrompt(userText) {
+  const boost = " high detail, ultra realistic, cinematic lighting, volumetric light, intricate textures, sharp focus, photorealistic, richly textured, coherent composition";
+  return userText.trim() + "," + boost;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Referenzen auf Modal und dessen Eingabefelder für den API‑Schlüssel
   const modal = document.getElementById('apiKeyModal');
@@ -152,7 +157,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Enter ohne Shift sendet den Prompt
-  promptInput.addEventListener('keydown', (e) => {
+  function autoGrow(){
+  promptInput.style.height='auto';
+  const max = Math.floor(window.innerHeight*0.6);
+  const h = Math.min(promptInput.scrollHeight, max);
+  promptInput.style.height = h + 'px';
+}
+promptInput.addEventListener('input', autoGrow);
+setTimeout(autoGrow, 0);
+
+promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendPrompt();
