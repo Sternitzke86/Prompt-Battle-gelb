@@ -17,11 +17,18 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!--
+    API‑Schlüssel‑Dialog: Beim ersten Start oder über die Tastenkombination
+    Ctrl+K kann der Benutzer hier seinen persönlichen OpenAI‑API‑Schlüssel
+    eingeben. Der Schlüssel wird ausschließlich im lokalen Speicher des
+    Browsers gespeichert. Ohne gültigen Schlüssel können keine Bilder
+    generiert werden.
+  -->
   <div id="apiKeyModal" class="modal">
     <div class="modal-content">
       <h2>OpenAI API‑Schlüssel</h2>
       <p>
-        Bitte gib deinen persönlichen OpenAI API‑Schlüssel ein. Der Schlüssel wird
+        Bitte gib deinen persönlichen OpenAI‑API‑Schlüssel ein. Der Schlüssel wird
         ausschließlich im lokalen Speicher deines Browsers gespeichert, damit du
         ihn nicht jedes Mal erneut eingeben musst. Ohne gültigen Schlüssel können
         keine Antworten generiert werden.
@@ -52,7 +59,7 @@
   </div>
 
   <!--
-    Unterer Bereich zur Eingabe des API‑Schlüssels. Dieser Bereich ist immer
+    Unterer Bereich zur Eingabe des API‑Schlüssels. Dieser Bereich ist stets
     sichtbar und erlaubt das Speichern eines neuen Schlüssels. Sobald ein
     Schlüssel vorhanden ist, wird er als Passwortfeld vorausgefüllt. Durch
     Drücken der Enter‑Taste oder den Speichern‑Button wird der Schlüssel im

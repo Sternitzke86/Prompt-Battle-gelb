@@ -8,6 +8,9 @@
 :root {
   --bg-color: #ffff3b; /* helles, knalliges Gelb */
   --text-color: #000; /* Schwarz für optimale Lesbarkeit */
+  /* Farbe des Overlays beim Vergrößern von Bildern: leicht transparente
+     Variante des Hintergrunds */
+  --modal-overlay-bg: rgba(255, 255, 59, 0.9);
 }
 
 body {
@@ -244,7 +247,8 @@ footer {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
+  /* Nutzt die farbige Overlay‑Variable statt schwarzem Hintergrund */
+  background-color: var(--modal-overlay-bg);
   justify-content: center;
   align-items: center;
   text-align: center;

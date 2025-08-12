@@ -1,50 +1,52 @@
 /*
   Einfacher JavaScript‑Controller für die Single‑User‑Prompt‑Battle‑Version.
-  Er lädt den API‑Schlüssel, zeigt ein Eingabefeld an und verarbeitet
-  Benutzereingaben, indem er sie an die OpenAI‑API sendet. Die Antworten
-  werden anschließend im Chatbereich angezeigt. Das Layout ist identisch mit
-  der Pink‑Variante; nur die Farben werden über die CSS‑Datei gesteuert.
+  Der API‑Schlüssel wird nicht im Code hinterlegt, sondern vom Nutzer
+  eingegeben und im lokalen Speicher gespeichert. Nach Eingabe oder Änderung
+  kann der Schlüssel im unteren Eingabebereich oder über Ctrl+K eingegeben werden.
+  Das Skript sendet Prompts an die OpenAI‑API und zeigt generierte Bilder
+  sowie Prompts im Chat‑Verlauf an. Bilder lassen sich per Klick vergrößern,
+  wobei das Overlay die Hintergrundfarbe der jeweiligen Farbvariante nutzt.
 */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Referenzen auf Modal und dessen Eingabefelder für den API‑Schlüssel
   const modal = document.getElementById('apiKeyModal');
   const apiKeyInput = document.getElementById('apiKeyInput');
   const saveApiKeyBtn = document.getElementById('saveApiKey');
-  // API‑Key aus lokalem Speicher laden. Dieser Wert wird sowohl vom
-  // Eingabebereich unten als auch von der modalen Eingabe verwendet.
+
+  // Lade einen eventuell zuvor gespeicherten API‑Schlüssel aus dem lokalen Speicher.
   let apiKey = localStorage.getItem('openai_api_key');
 
+  // Zeige bzw. verberge den API‑Key‑Dialog
   function showApiKeyModal() {
-    modal.style.display = 'block';
+    if (modal) modal.style.display = 'block';
   }
   function hideApiKeyModal() {
-    modal.style.display = 'none';
+    if (modal) modal.style.display = 'none';
   }
-  // Wenn noch kein API‑Key vorhanden ist, wird kein Modal mehr automatisch
-  // angezeigt. Stattdessen kann der Schlüssel jederzeit im unteren Eingabe‑
-  // bereich eingetragen und gespeichert werden. Der Modaldialog bleibt
-  // weiterhin verfügbar (Ctrl+K) als alternative Möglichkeit zur Eingabe.
-  saveApiKeyBtn.addEventListener('click', () => {
-    const key = apiKeyInput.value.trim();
-    if (key) {
-      localStorage.setItem('openai_api_key', key);
-      apiKey = key;
-      hideApiKeyModal();
-      // Synchronisiere auch das untere Passwortfeld mit dem neuen Schlüssel
-      const barInput = document.getElementById('apiKeyBarInput');
-      if (barInput) barInput.value = key;
-    }
-  });
 
-  // Vollbild‑Eingabe und Ergebnis‑Overlay referenzieren
+  // Speichere den API‑Key aus dem Modalfenster im lokalen Speicher
+  if (saveApiKeyBtn) {
+    saveApiKeyBtn.addEventListener('click', () => {
+      const key = apiKeyInput.value.trim();
+      if (key) {
+        localStorage.setItem('openai_api_key', key);
+        apiKey = key;
+        hideApiKeyModal();
+        // Synchronisiere auch das Passwortfeld im unteren Eingabebereich
+        const barInput = document.getElementById('apiKeyBarInput');
+        if (barInput) barInput.value = key;
+      }
+    });
+  }
+
+  // Elemente für das Prompt‑Eingabefeld, das Ergebnis‑Overlay und die Nachrichtenliste
   const promptInput = document.getElementById('prompt');
   const resultModal = document.getElementById('resultModal');
   const resultContent = document.getElementById('resultContent');
   const messagesContainer = document.getElementById('messages');
 
-  // Zeigt eine Warnung an, wenn die Seite über file:// geöffnet wurde. In diesem
-  // Fall müssen wir auf einen lokalen Webserver wechseln. Die Warnung wird im
-  // Ergebnismodal angezeigt.
+  // Warnung, wenn die Seite über file:// geladen wurde
   function warnIfFileProtocol() {
     if (window.location.protocol === 'file:') {
       showResult(
@@ -55,10 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
 
-  // Zeigt den Ergebnismodal an und setzt den Inhalt. Wenn ein Element (z. B. Bild) übergeben
-  // wird, wird es direkt eingesetzt, ansonsten wird Text angezeigt.
+  // Anzeige eines Ergebnisses im Overlay (Bild oder Fehlermeldung)
   function showResult(content) {
-    // Leere vorherige Inhalte
     resultContent.innerHTML = '';
     if (typeof content === 'string') {
       const p = document.createElement('p');
@@ -69,11 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     resultModal.style.display = 'flex';
   }
-
   function hideResult() {
     resultModal.style.display = 'none';
   }
 
+  // Hauptfunktion zum Senden eines Prompts an die OpenAI‑API
   async function sendPrompt() {
     const prompt = promptInput.value.trim();
     if (!prompt) return;
@@ -81,20 +81,17 @@ document.addEventListener('DOMContentLoaded', () => {
       showResult('Kein API‑Schlüssel gefunden. Bitte gib deinen Schlüssel unten ein.');
       return;
     }
-    // Leg den aktuellen Prompt in einer neuen Nachricht ab
+    // Erstelle eine neue Nachricht im Chatverlauf
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
     const promptPara = document.createElement('p');
     promptPara.className = 'prompt-text';
     promptPara.textContent = prompt;
     messageDiv.appendChild(promptPara);
-    // Füge die leere Nachricht dem Container hinzu, damit der Platz reserviert ist
     messagesContainer.appendChild(messageDiv);
-    // Scrolle ans Ende, damit die neue Nachricht sichtbar ist
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    // Leere das Eingabefeld nach dem Absenden
     promptInput.value = '';
-    // Warnung bei file://
+    // Bei direktem file:// Zugriff abbrechen
     if (warnIfFileProtocol()) return;
     const payload = {
       model: 'dall-e-3',
@@ -132,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = document.createElement('img');
         img.src = imageUrl;
         img.alt = prompt;
-        // Durch Klick auf das Bild wird eine vergrößerte Ansicht im Modal angezeigt
         img.addEventListener('click', () => {
           showResult(img.cloneNode(true));
         });
@@ -152,12 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       messageDiv.appendChild(errorP);
     }
-    // Stelle sicher, dass die neu eingefügte Nachricht sichtbar ist
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-  // Beim Drücken von Enter wird der Prompt abgeschickt. Mit Shift+Enter kann
-  // man weiterhin einen Zeilenumbruch einfügen (falls gewünscht).
+  // Enter ohne Shift sendet den Prompt
   promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -165,36 +159,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Modal schließen, wenn außerhalb geklickt oder Escape gedrückt wird
+  // Klick auf das Overlay schließt es wieder (wenn außerhalb des Bildes)
   resultModal.addEventListener('click', (event) => {
-    // Schließe nur, wenn man direkt auf den Hintergrund klickt (nicht auf das Bild)
     if (event.target === resultModal) {
       hideResult();
     }
   });
+  // Escape schließt Modal und gegebenenfalls das API‑Key‑Modal
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       hideResult();
       hideApiKeyModal();
     }
-    // Öffne den API‑Key‑Dialog mit Ctrl+K
+    // Öffne den API‑Key‑Dialog mit Ctrl+K / Cmd+K
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
       showApiKeyModal();
     }
   });
 
-  // Setze den Fokus auf das Eingabefeld, damit sofort geschrieben werden kann.
+  // Direkt nach Laden: Fokus auf das Promptfeld
   promptInput.focus();
 
-  // *** API‑Key‑Bar Funktionslogik ***
-  const bar = document.getElementById('apiKeyBar');
+  // Logik für den unteren API‑Key‑Eingabebereich
   const barInput = document.getElementById('apiKeyBarInput');
   const barSaveBtn = document.getElementById('saveApiKeyBar');
-  // Bei bestehendem Schlüssel im Speicher fülle das Passwortfeld vor. Der
-  // Eingabebereich bleibt weiterhin sichtbar, damit der Schlüssel jederzeit
-  // überprüft oder geändert werden kann. Zum Ändern kann man auch Ctrl+K
-  // nutzen, um den Modaldialog zu öffnen.
   if (apiKey && barInput) {
     barInput.value = apiKey;
   }
@@ -203,12 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (key) {
       localStorage.setItem('openai_api_key', key);
       apiKey = key;
-      // Synchronisiere auch das Modal‑Feld
-      const modalInput = document.getElementById('apiKeyInput');
-      if (modalInput) modalInput.value = key;
-      // Der Bar bleibt sichtbar, damit der Schlüssel später erneut geändert
-      // werden kann. Über Ctrl+K kann zusätzlich der Modaldialog geöffnet
-      // werden.
+      // Synchronisiere auch das Modal
+      if (apiKeyInput) apiKeyInput.value = key;
     }
   }
   if (barSaveBtn) {
