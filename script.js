@@ -132,7 +132,7 @@ Transform this user prompt into an optimized DALL-E 3 prompt:`;
       model: 'dall-e-3',
       prompt: optimizedPrompt,
       n: 1,
-      size: '1024x1024',
+      size: '1792x1024', // Querformat (Landscape) - 16:9 Verhältnis
       quality: 'hd',
       style: 'vivid',
       response_format: 'url'
