@@ -226,12 +226,6 @@ Transform this user prompt into an optimized DALL-E 3 prompt:`;
       }
     } catch (error) {
       console.error('Generation error:', error);
-      
-      // Loading-Indikator entfernen
-      if (messageDiv.contains(loadingDiv)) {
-        messageDiv.removeChild(loadingDiv);
-      }
-      
       const errorP = document.createElement('p');
       if (error.message && error.message.toLowerCase().includes('failed to fetch')) {
         errorP.textContent = 'Fehler: Die Anfrage konnte nicht gesendet werden. Überprüfe deine Internetverbindung oder starte einen lokalen Webserver.';
