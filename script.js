@@ -9,7 +9,7 @@
 */
 
 function enhancePrompt(userText) {
-  const boost = " high detail, ultra realistic, cinematic lighting, volumetric light, intricate textures, sharp focus, photorealistic, richly textured, coherent composition";
+  const boost = " detailed, realistic lighting, natural colors";
   return userText.trim() + "," + boost;
 }
 
