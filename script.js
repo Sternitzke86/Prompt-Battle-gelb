@@ -9,8 +9,8 @@
 */
 
 function enhancePrompt(userText) {
-  const boost = " detailed, realistic lighting, natural colors";
-  return userText.trim() + "," + boost;
+  const systemStyle = "Generate a highly detailed, photorealistic image with balanced lighting, realistic textures, coherent composition, and natural colors, faithfully representing the user’s description. Avoid exaggeration unless explicitly requested. ";
+  return systemStyle + userText.trim();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
