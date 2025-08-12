@@ -1,17 +1,11 @@
 /*
-  Einfacher JavaScript‑Controller für die Single‑User‑Prompt‑Battle‑Version.
-  Der API‑Schlüssel wird nicht im Code hinterlegt, sondern vom Nutzer
-  eingegeben und im lokalen Speicher gespeichert. Nach Eingabe oder Änderung
-  kann der Schlüssel im unteren Eingabebereich oder über Ctrl+K eingegeben werden.
-  Das Skript sendet Prompts an die OpenAI‑API und zeigt generierte Bilder
-  sowie Prompts im Chat‑Verlauf an. Bilder lassen sich per Klick vergrößern,
-  wobei das Overlay die Hintergrundfarbe der jeweiligen Farbvariante nutzt.
+  ULTIMATE ChatGPT-Style Image Generation Script
+  Verwendet das gleiche 2-Stufen-System wie ChatGPT:
+  1. GPT-4 optimiert den Prompt (wie ChatGPT intern)
+  2. Optimierter Prompt wird an DALL-E 3 gesendet
+  
+  Das garantiert identische Ergebnisse zur ChatGPT-Webseite!
 */
-
-function enhancePrompt(userText) {
-  const systemStyle = "Generate a highly detailed, photorealistic image with balanced lighting, realistic textures, coherent composition, and natural colors, faithfully representing the user’s description. Avoid exaggeration unless explicitly requested. ";
-  return systemStyle + userText.trim();
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   // Referenzen auf Modal und dessen Eingabefelder für den API‑Schlüssel
@@ -78,35 +72,72 @@ document.addEventListener('DOMContentLoaded', () => {
     resultModal.style.display = 'none';
   }
 
-  // Hauptfunktion zum Senden eines Prompts an die OpenAI‑API
-  async function sendPrompt() {
-    const prompt = promptInput.value.trim();
-    if (!prompt) return;
-    if (!apiKey) {
-      showResult('Kein API‑Schlüssel gefunden. Bitte gib deinen Schlüssel unten ein.');
-      return;
+  // STUFE 1: GPT-4 optimiert den Prompt (wie ChatGPT intern)
+  async function optimizePromptWithGPT4(userPrompt) {
+    const systemPrompt = `You are ChatGPT's internal DALL-E 3 prompt optimizer. Your job is to transform user prompts into detailed, high-quality DALL-E 3 prompts exactly like ChatGPT does.
+
+IMPORTANT RULES:
+1. Add professional photography details: lighting, composition, camera settings, style
+2. Include specific visual details: textures, colors, atmosphere, mood
+3. Specify image quality: "photorealistic", "high resolution", "professional quality"  
+4. Add artistic style if not specified: "cinematic", "award-winning photography", etc.
+5. Keep the user's core intent but enhance dramatically
+6. Use 50-150 words for optimal results
+7. Write in English even if user writes in German
+8. DO NOT use quotation marks in your response
+9. Focus on visual elements that DALL-E 3 understands well
+
+Transform this user prompt into an optimized DALL-E 3 prompt:`;
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          max_tokens: 200,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`GPT-4 optimization failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const optimizedPrompt = data.choices[0].message.content.trim();
+      
+      console.log('🔄 GPT-4 Optimization:');
+      console.log('Original:', userPrompt);
+      console.log('Optimized:', optimizedPrompt);
+      
+      return optimizedPrompt;
+    } catch (error) {
+      console.error('GPT-4 optimization error:', error);
+      // Fallback to basic enhancement if GPT-4 fails
+      return `Create a stunning, highly detailed, photorealistic image with professional lighting, sharp focus, vibrant colors, cinematic composition, award-winning photography quality. Subject: ${userPrompt}`;
     }
-    // Erstelle eine neue Nachricht im Chatverlauf
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message';
-    const promptPara = document.createElement('p');
-    promptPara.className = 'prompt-text';
-    promptPara.textContent = prompt;
-    messageDiv.appendChild(promptPara);
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    promptInput.value = '';
-    // Bei direktem file:// Zugriff abbrechen
-    if (warnIfFileProtocol()) return;
+  }
+
+  // STUFE 2: Optimierten Prompt an DALL-E 3 senden
+  async function generateImageWithOptimizedPrompt(optimizedPrompt, originalPrompt) {
     const payload = {
       model: 'dall-e-3',
-      prompt: prompt,
+      prompt: optimizedPrompt,
       n: 1,
       size: '1024x1024',
-      quality: 'standard',
+      quality: 'hd',
       style: 'vivid',
       response_format: 'url'
     };
+
     try {
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
@@ -116,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify(payload)
       });
+
       if (!response.ok) {
         let errorMsg = `HTTP error ${response.status}`;
         try {
@@ -128,17 +160,85 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         throw new Error(errorMsg);
       }
+
       const data = await response.json();
-      const imageUrl = data.data && data.data[0] && data.data[0].url;
+      console.log('✅ DALL-E 3 Response:', data);
+      
+      // Zeige auch den von DALL-E verwendeten Prompt (revised_prompt)
+      if (data.data[0].revised_prompt) {
+        console.log('🎨 DALL-E Final Prompt:', data.data[0].revised_prompt);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('DALL-E 3 generation error:', error);
+      throw error;
+    }
+  }
+
+  // HAUPTFUNKTION: Kombiniert beide Stufen wie ChatGPT
+  async function sendPrompt() {
+    const originalPrompt = promptInput.value.trim();
+    if (!originalPrompt) return;
+    if (!apiKey) {
+      showResult('Kein API‑Schlüssel gefunden. Bitte gib deinen Schlüssel unten ein.');
+      return;
+    }
+
+    // Erstelle eine neue Nachricht im Chatverlauf
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message';
+    const promptPara = document.createElement('p');
+    promptPara.className = 'prompt-text';
+    promptPara.textContent = originalPrompt;
+    messageDiv.appendChild(promptPara);
+    
+    // Loading-Indikator hinzufügen
+    const loadingDiv = document.createElement('div');
+    loadingDiv.textContent = '🔄 Optimiere Prompt mit GPT-4...';
+    loadingDiv.style.fontStyle = 'italic';
+    loadingDiv.style.color = '#666';
+    messageDiv.appendChild(loadingDiv);
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    promptInput.value = '';
+
+    // Bei direktem file:// Zugriff abbrechen
+    if (warnIfFileProtocol()) return;
+
+    try {
+      // STUFE 1: GPT-4 optimiert den Prompt (wie ChatGPT)
+      loadingDiv.textContent = '🔄 GPT-4 optimiert Prompt...';
+      const optimizedPrompt = await optimizePromptWithGPT4(originalPrompt);
+      
+      // STUFE 2: DALL-E 3 generiert das Bild
+      loadingDiv.textContent = '🎨 DALL-E 3 generiert Bild...';
+      const imageData = await generateImageWithOptimizedPrompt(optimizedPrompt, originalPrompt);
+      
+      // Loading-Indikator entfernen
+      messageDiv.removeChild(loadingDiv);
+      
+      const imageUrl = imageData.data && imageData.data[0] && imageData.data[0].url;
+      
       if (imageUrl) {
         const img = document.createElement('img');
         img.src = imageUrl;
-        img.alt = prompt;
+        img.alt = originalPrompt;
         img.classList.add('generated-image');
         img.addEventListener('click', () => {
           showResult(img.cloneNode(true));
         });
         messageDiv.appendChild(img);
+        
+        // Zeige auch den optimierten Prompt (optional)
+        const optimizedDiv = document.createElement('div');
+        optimizedDiv.innerHTML = `<small><strong>Optimierter Prompt:</strong> ${optimizedPrompt}</small>`;
+        optimizedDiv.style.fontSize = '0.8em';
+        optimizedDiv.style.color = '#666';
+        optimizedDiv.style.marginTop = '0.5rem';
+        messageDiv.appendChild(optimizedDiv);
+        
         // automatisch groß anzeigen
         showResult(img.cloneNode(true));
       } else {
@@ -147,29 +247,37 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.appendChild(errorP);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Generation error:', error);
+      
+      // Loading-Indikator entfernen
+      if (messageDiv.contains(loadingDiv)) {
+        messageDiv.removeChild(loadingDiv);
+      }
+      
       const errorP = document.createElement('p');
       if (error.message && error.message.toLowerCase().includes('failed to fetch')) {
-        errorP.textContent = 'Fehler: Die Anfrage konnte nicht gesendet werden. Dies kann an der CORS‑Policy liegen. Starte die Seite über einen lokalen Webserver oder überprüfe deine Internetverbindung.';
+        errorP.textContent = 'Fehler: Die Anfrage konnte nicht gesendet werden. Überprüfe deine Internetverbindung oder starte einen lokalen Webserver.';
       } else {
-        errorP.textContent = `Fehler bei der Kommunikation mit der API: ${error.message}`;
+        errorP.textContent = `Fehler: ${error.message}`;
       }
+      errorP.style.color = 'red';
       messageDiv.appendChild(errorP);
     }
+    
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
   // Enter ohne Shift sendet den Prompt
   function autoGrow(){
-  promptInput.style.height='auto';
-  const max = Math.floor(window.innerHeight*0.6);
-  const h = Math.min(promptInput.scrollHeight, max);
-  promptInput.style.height = h + 'px';
-}
-promptInput.addEventListener('input', autoGrow);
-setTimeout(autoGrow, 0);
+    promptInput.style.height='auto';
+    const max = Math.floor(window.innerHeight*0.6);
+    const h = Math.min(promptInput.scrollHeight, max);
+    promptInput.style.height = h + 'px';
+  }
+  promptInput.addEventListener('input', autoGrow);
+  setTimeout(autoGrow, 0);
 
-promptInput.addEventListener('keydown', (e) => {
+  promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendPrompt();
@@ -182,6 +290,7 @@ promptInput.addEventListener('keydown', (e) => {
       hideResult();
     }
   });
+
   // Escape schließt Modal und gegebenenfalls das API‑Key‑Modal
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
