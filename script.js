@@ -1,47 +1,16 @@
 /*
-  Verbesserter JavaScript‑Controller mit automatischer Prompt-Optimierung
-  wie bei ChatGPT. Jetzt werden Prompts automatisch erweitert und verbessert,
-  um die gleichen Ergebnisse wie auf der ChatGPT-Webseite zu erzielen.
+  Einfacher JavaScript‑Controller für die Single‑User‑Prompt‑Battle‑Version.
+  Der API‑Schlüssel wird nicht im Code hinterlegt, sondern vom Nutzer
+  eingegeben und im lokalen Speicher gespeichert. Nach Eingabe oder Änderung
+  kann der Schlüssel im unteren Eingabebereich oder über Ctrl+K eingegeben werden.
+  Das Skript sendet Prompts an die OpenAI‑API und zeigt generierte Bilder
+  sowie Prompts im Chat‑Verlauf an. Bilder lassen sich per Klick vergrößern,
+  wobei das Overlay die Hintergrundfarbe der jeweiligen Farbvariante nutzt.
 */
 
-// Erweiterte Prompt-Optimierung wie bei ChatGPT
 function enhancePrompt(userText) {
-  // Prüfe ob der Prompt bereits sehr detailliert ist
-  if (userText.length > 200 && (userText.includes('photorealistic') || userText.includes('detailed'))) {
-    return userText.trim(); // Bereits optimiert
-  }
-
-  // ChatGPT-Style Enhancement
-  const enhancements = [
-    "Create a highly detailed, photorealistic image",
-    "with professional lighting and composition",
-    "sharp focus, vibrant colors",
-    "high quality, masterpiece"
-  ];
-  
-  const styleEnhancement = enhancements.join(', ');
-  return `${styleEnhancement}. ${userText.trim()}`;
-}
-
-// Alternative: Noch aggressivere ChatGPT-ähnliche Optimierung
-function enhancePromptAdvanced(userText) {
-  const basePrompt = userText.trim();
-  
-  // Wenn bereits sehr detailliert, nur minimale Ergänzung
-  if (basePrompt.length > 150) {
-    return `${basePrompt}, high quality, photorealistic`;
-  }
-  
-  // Für kurze Prompts: Umfassende Verbesserung wie ChatGPT
-  const chatGptStyle = [
-    "Create a stunning, highly detailed photograph",
-    "professional photography, perfect composition",
-    "beautiful lighting, sharp focus",
-    "vibrant colors, high resolution",
-    "masterpiece quality"
-  ].join(', ');
-  
-  return `${chatGptStyle}. Subject: ${basePrompt}`;
+  const systemStyle = "Generate a highly detailed, photorealistic image with balanced lighting, realistic textures, coherent composition, and natural colors, faithfully representing the user’s description. Avoid exaggeration unless explicitly requested. ";
+  return systemStyle + userText.trim();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -111,43 +80,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Hauptfunktion zum Senden eines Prompts an die OpenAI‑API
   async function sendPrompt() {
-    const originalPrompt = promptInput.value.trim();
-    if (!originalPrompt) return;
+    const prompt = promptInput.value.trim();
+    if (!prompt) return;
     if (!apiKey) {
       showResult('Kein API‑Schlüssel gefunden. Bitte gib deinen Schlüssel unten ein.');
       return;
     }
-    
-    // WICHTIG: Hier wird jetzt der Prompt automatisch verbessert!
-    const enhancedPrompt = enhancePromptAdvanced(originalPrompt);
-    console.log('Original:', originalPrompt);
-    console.log('Enhanced:', enhancedPrompt);
-    
-    // Erstelle eine neue Nachricht im Chatverlauf (zeige nur den Original-Prompt an)
+    // Erstelle eine neue Nachricht im Chatverlauf
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
     const promptPara = document.createElement('p');
     promptPara.className = 'prompt-text';
-    promptPara.textContent = originalPrompt; // Zeige nur den ursprünglichen Prompt
+    promptPara.textContent = prompt;
     messageDiv.appendChild(promptPara);
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     promptInput.value = '';
-    
     // Bei direktem file:// Zugriff abbrechen
     if (warnIfFileProtocol()) return;
-    
-    // WICHTIG: Verwende den verbesserten Prompt für die API!
     const payload = {
       model: 'dall-e-3',
-      prompt: enhancedPrompt, // <- Hier wird der verbesserte Prompt verwendet
+      prompt: prompt,
       n: 1,
       size: '1024x1024',
-      quality: 'hd', // <- Geändert von 'standard' zu 'hd' wie bei ChatGPT
+      quality: 'standard',
       style: 'vivid',
       response_format: 'url'
     };
-    
     try {
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
@@ -157,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify(payload)
       });
-      
       if (!response.ok) {
         let errorMsg = `HTTP error ${response.status}`;
         try {
@@ -170,14 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         throw new Error(errorMsg);
       }
-      
       const data = await response.json();
       const imageUrl = data.data && data.data[0] && data.data[0].url;
-      
       if (imageUrl) {
         const img = document.createElement('img');
         img.src = imageUrl;
-        img.alt = originalPrompt;
+        img.alt = prompt;
         img.classList.add('generated-image');
         img.addEventListener('click', () => {
           showResult(img.cloneNode(true));
@@ -205,15 +161,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Enter ohne Shift sendet den Prompt
   function autoGrow(){
-    promptInput.style.height='auto';
-    const max = Math.floor(window.innerHeight*0.6);
-    const h = Math.min(promptInput.scrollHeight, max);
-    promptInput.style.height = h + 'px';
-  }
-  promptInput.addEventListener('input', autoGrow);
-  setTimeout(autoGrow, 0);
+  promptInput.style.height='auto';
+  const max = Math.floor(window.innerHeight*0.6);
+  const h = Math.min(promptInput.scrollHeight, max);
+  promptInput.style.height = h + 'px';
+}
+promptInput.addEventListener('input', autoGrow);
+setTimeout(autoGrow, 0);
 
-  promptInput.addEventListener('keydown', (e) => {
+promptInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendPrompt();
@@ -226,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
       hideResult();
     }
   });
-  
   // Escape schließt Modal und gegebenenfalls das API‑Key‑Modal
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
