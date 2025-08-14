@@ -102,20 +102,37 @@ document.addEventListener('DOMContentLoaded', () => {
       // Erstelle einen temporären Download-Link
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
+      
+      // Edge-spezifische Eigenschaften
       link.href = downloadUrl;
       link.download = filename;
       link.style.display = 'none';
-      // Füge den Link zum DOM hinzu
+      link.target = '_blank';
+      
+      // Trigger Download mit zusätzlichen Edge-Workarounds
       document.body.appendChild(link);
-      // Löst den Download aus
-      link.click();
-      // Entferne den Link und gib die URL frei
+      
+      // Verschiedene Trigger-Methoden für Edge
+      try {
+        link.click();
+      } catch (e) {
+        // Fallback für Edge: simuliere Mouse-Event
+        const event = new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          view: window
+        });
+        link.dispatchEvent(event);
+      }
+      
+      // Cleanup mit Verzögerung für Edge
       setTimeout(() => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(downloadUrl);
       }, 100);
-
+      
       console.log(`✅ Bild automatisch heruntergeladen: ${filename}`);
+      
       // Zusätzliche Bestätigung für den Benutzer
       showDownloadConfirmation(filename);
       
@@ -391,32 +408,4 @@ Transform this user prompt into an optimized DALL-E 3 prompt:`;
   // Direkt nach Laden: Fokus auf das Promptfeld
   promptInput.focus();
 
-  // Logik für den unteren API‑Key‑Eingabebereich
-  const barInput = document.getElementById('apiKeyBarInput');
-  const barSaveBtn = document.getElementById('saveApiKeyBar');
-  if (apiKey && barInput) {
-    barInput.value = apiKey;
-  }
-  function saveKeyFromBar() {
-    const key = barInput.value.trim();
-    if (key) {
-      localStorage.setItem('openai_api_key', key);
-      apiKey = key;
-      // Synchronisiere auch das Modal
-      if (apiKeyInput) apiKeyInput.value = key;
-    }
-  }
-  if (barSaveBtn) {
-    barSaveBtn.addEventListener('click', () => {
-      saveKeyFromBar();
-    });
-  }
-  if (barInput) {
-    barInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        saveKeyFromBar();
-      }
-    });
-  }
 });
